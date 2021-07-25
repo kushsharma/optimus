@@ -3,8 +3,6 @@ package models
 import (
 	"context"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -124,7 +122,7 @@ type DefaultHookConfigRequest struct {
 	Answers PluginAnswers
 
 	// TaskConfig of the parent on which this task belongs to
-	TaskConfig TaskPluginConfigs
+	TaskConfig PluginConfigs
 }
 
 type DefaultHookConfigResponse struct {
@@ -174,65 +172,9 @@ type DefaultHookAssetsRequest struct {
 
 	Answers PluginAnswers
 	// TaskConfig of the parent on which this task belongs to
-	TaskConfig TaskPluginConfigs
+	TaskConfig PluginConfigs
 }
 
 type DefaultHookAssetsResponse struct {
 	Assets HookPluginAssets
-}
-
-var (
-	// HookRegistry are a list of hooks that are supported in a job
-	HookRegistry = &supportedHooks{
-		data: map[string]HookPlugin{},
-	}
-	ErrUnsupportedHook = errors.New("unsupported hook requested")
-)
-
-type HookRepo interface {
-	GetByName(string) (HookPlugin, error)
-	GetAll() []HookPlugin
-	Add(HookPlugin) error
-}
-
-type supportedHooks struct {
-	data map[string]HookPlugin
-}
-
-func (s *supportedHooks) GetByName(name string) (HookPlugin, error) {
-	if unit, ok := s.data[name]; ok {
-		return unit, nil
-	}
-	return nil, errors.Wrap(ErrUnsupportedHook, name)
-}
-
-func (s *supportedHooks) GetAll() []HookPlugin {
-	list := []HookPlugin{}
-	for _, unit := range s.data {
-		list = append(list, unit)
-	}
-	return list
-}
-
-func (s *supportedHooks) Add(newUnit HookPlugin) error {
-	schema, err := newUnit.GetHookSchema(context.TODO(), GetHookSchemaRequest{})
-	if err != nil {
-		return err
-	}
-	if schema.Name == "" {
-		return errors.New("hook name cannot be empty")
-	}
-
-	// check if name is already used
-	if _, ok := s.data[schema.Name]; ok {
-		return errors.Errorf("hook name already in use %s", schema.Name)
-	}
-
-	// image is a required field
-	if schema.Image == "" {
-		return errors.New("hook image cannot be empty")
-	}
-
-	s.data[schema.Name] = newUnit
-	return nil
 }

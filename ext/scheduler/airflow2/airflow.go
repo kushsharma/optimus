@@ -192,7 +192,7 @@ func (a *scheduler) Clear(ctx context.Context, projSpec models.ProjectSpec, jobN
 	if err != nil {
 		return errors.Wrapf(err, "failed to build http request for %s", postURL)
 	}
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-PluginType", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(authToken))))
 
 	resp, err := a.httpClient.Do(request)
@@ -240,7 +240,7 @@ func (a *scheduler) GetDagRunStatus(ctx context.Context, projSpec models.Project
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to build http request for %s", dagStatusBatchUrl)
 		}
-		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Content-PluginType", "application/json")
 		request.Header.Set("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(authToken))))
 
 		resp, err := a.httpClient.Do(request)

@@ -54,7 +54,7 @@ func TestSlack(t *testing.T) {
 		muxRouter := mux.NewRouter()
 		server := httptest.NewServer(muxRouter)
 		muxRouter.HandleFunc("/users.lookupByEmail", func(rw http.ResponseWriter, r *http.Request) {
-			rw.Header().Set("Content-Type", "application/json")
+			rw.Header().Set("Content-PluginType", "application/json")
 			response, _ := json.Marshal(struct {
 				Ok   bool     `json:"ok"`
 				User api.User `json:"user"`
@@ -65,7 +65,7 @@ func TestSlack(t *testing.T) {
 			rw.Write(response)
 		})
 		muxRouter.HandleFunc("/chat.postMessage", func(rw http.ResponseWriter, r *http.Request) {
-			rw.Header().Set("Content-Type", "application/json")
+			rw.Header().Set("Content-PluginType", "application/json")
 			response, _ := json.Marshal(struct {
 				SlackResponse api.SlackResponse
 			}{
@@ -117,7 +117,7 @@ func TestSlack(t *testing.T) {
 		muxRouter := mux.NewRouter()
 		server := httptest.NewServer(muxRouter)
 		muxRouter.HandleFunc("/usergroups.list", func(rw http.ResponseWriter, r *http.Request) {
-			rw.Header().Set("Content-Type", "application/json")
+			rw.Header().Set("Content-PluginType", "application/json")
 			response, _ := json.Marshal(struct {
 				Ok         bool            `json:"ok"`
 				UserGroups []api.UserGroup `json:"usergroups"`
@@ -130,7 +130,7 @@ func TestSlack(t *testing.T) {
 			rw.Write(response)
 		})
 		muxRouter.HandleFunc("/usergroups.users.list", func(rw http.ResponseWriter, r *http.Request) {
-			rw.Header().Set("Content-Type", "application/json")
+			rw.Header().Set("Content-PluginType", "application/json")
 			response, _ := json.Marshal(struct {
 				Ok    bool     `json:"ok"`
 				Users []string `json:"users"`
@@ -141,7 +141,7 @@ func TestSlack(t *testing.T) {
 			rw.Write(response)
 		})
 		muxRouter.HandleFunc("/chat.postMessage", func(rw http.ResponseWriter, r *http.Request) {
-			rw.Header().Set("Content-Type", "application/json")
+			rw.Header().Set("Content-PluginType", "application/json")
 			response, _ := json.Marshal(struct {
 				SlackResponse api.SlackResponse
 			}{

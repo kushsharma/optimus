@@ -98,10 +98,10 @@ func TestJobAdapter(t *testing.T) {
 		Image:       "image",
 		Description: "description",
 	}, nil)
-	execUnit.On("GenerateTaskDestination", context.TODO(), models.GenerateTaskDestinationRequest{
+	execUnit.On("GenerateDestination", context.TODO(), models.GenerateDestinationRequest{
 		Config: models.TaskPluginConfigs{}.FromJobSpec(jobSpecs[0].Task.Config),
 		Assets: models.TaskPluginAssets{}.FromJobSpec(jobSpecs[0].Assets),
-	}).Return(models.GenerateTaskDestinationResponse{Destination: "destination_table"}, nil)
+	}).Return(models.GenerateDestinationResponse{Destination: "destination_table"}, nil)
 
 	hookUnit.On("GetHookSchema", context.Background(), models.GetHookSchemaRequest{}).Return(models.GetHookSchemaResponse{
 		Name:        "transporter",

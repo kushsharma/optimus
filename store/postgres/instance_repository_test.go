@@ -82,16 +82,16 @@ func TestInstanceRepository(t *testing.T) {
 		},
 	}
 
-	unitData := models.GenerateTaskDestinationRequest{
+	unitData := models.GenerateDestinationRequest{
 		Config: models.TaskPluginConfigs{}.FromJobSpec(jobConfigs[0].Task.Config),
 		Assets: models.TaskPluginAssets{}.FromJobSpec(jobConfigs[0].Assets),
 	}
-	execUnit1.On("GenerateTaskDestination", context.TODO(), unitData).Return(models.GenerateTaskDestinationResponse{Destination: "p.d.t"}, nil)
-	unitData2 := models.GenerateTaskDestinationRequest{
+	execUnit1.On("GenerateDestination", context.TODO(), unitData).Return(models.GenerateDestinationResponse{Destination: "p.d.t"}, nil)
+	unitData2 := models.GenerateDestinationRequest{
 		Config: models.TaskPluginConfigs{}.FromJobSpec(jobConfigs[1].Task.Config),
 		Assets: models.TaskPluginAssets{}.FromJobSpec(jobConfigs[1].Assets),
 	}
-	execUnit2.On("GenerateTaskDestination", context.TODO(), unitData2).Return(models.GenerateTaskDestinationResponse{Destination: "p.d.t"}, nil)
+	execUnit2.On("GenerateDestination", context.TODO(), unitData2).Return(models.GenerateDestinationResponse{Destination: "p.d.t"}, nil)
 
 	DBSetup := func() *gorm.DB {
 		dbURL, ok := os.LookupEnv("TEST_OPTIMUS_DB_URL")

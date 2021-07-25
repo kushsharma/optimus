@@ -20,8 +20,8 @@ import (
 func TestService(t *testing.T) {
 	execUnit := new(mock.TaskPlugin)
 	execUnit.On("Name").Return("bq")
-	execUnit.On("GenerateTaskDestination", context.TODO(), mock2.AnythingOfType("models.GenerateTaskDestinationRequest")).Return(
-		models.GenerateTaskDestinationResponse{Destination: "proj.data.tab"}, nil)
+	execUnit.On("GenerateDestination", context.TODO(), mock2.AnythingOfType("models.GenerateDestinationRequest")).Return(
+		models.GenerateDestinationResponse{Destination: "proj.data.tab"}, nil)
 	jobSpec := models.JobSpec{
 		Name:  "foo",
 		Owner: "mee@mee",

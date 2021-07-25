@@ -2,7 +2,6 @@ package job
 
 import (
 	"bytes"
-	"context"
 	"text/template"
 	"time"
 
@@ -53,9 +52,6 @@ func (com *Compiler) Compile(namespaceSpec models.NamespaceSpec, jobSpec models.
 	if err = tmpl.Execute(&buf, struct {
 		Namespace                  models.NamespaceSpec
 		Job                        models.JobSpec
-		TaskSchemaRequest          models.GetTaskSchemaRequest
-		HookSchemaRequest          models.GetHookSchemaRequest
-		Context                    context.Context
 		Hostname                   string
 		HookTypePre                string
 		HookTypePost               string
@@ -70,9 +66,6 @@ func (com *Compiler) Compile(namespaceSpec models.NamespaceSpec, jobSpec models.
 		Namespace:                  namespaceSpec,
 		Job:                        jobSpec,
 		Hostname:                   com.hostname,
-		TaskSchemaRequest:          models.GetTaskSchemaRequest{},
-		HookSchemaRequest:          models.GetHookSchemaRequest{},
-		Context:                    context.Background(),
 		HookTypePre:                string(models.HookTypePre),
 		HookTypePost:               string(models.HookTypePost),
 		HookTypeFail:               string(models.HookTypeFail),

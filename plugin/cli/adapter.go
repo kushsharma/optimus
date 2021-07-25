@@ -1,11 +1,11 @@
-package task
+package cli
 
 import (
-	pb "github.com/odpf/optimus/api/proto/odpf/optimus"
+	pb "github.com/odpf/optimus/api/proto/odpf/optimus/plugins"
 	"github.com/odpf/optimus/models"
 )
 
-func adaptQuestionToProto(q models.PluginQuestion) *pb.PluginQuestion {
+func AdaptQuestionToProto(q models.PluginQuestion) *pb.PluginQuestion {
 	pq := &pb.PluginQuestion{
 		Name:        q.Name,
 		Prompt:      q.Prompt,
@@ -21,7 +21,7 @@ func adaptQuestionToProto(q models.PluginQuestion) *pb.PluginQuestion {
 				Questions: []*pb.PluginQuestion{},
 			}
 			for _, sqq := range sq.Questions {
-				protoSubQ.Questions = append(protoSubQ.Questions, adaptQuestionToProto(sqq))
+				protoSubQ.Questions = append(protoSubQ.Questions, AdaptQuestionToProto(sqq))
 			}
 			protoSubQuestions = append(protoSubQuestions, protoSubQ)
 		}
@@ -30,7 +30,7 @@ func adaptQuestionToProto(q models.PluginQuestion) *pb.PluginQuestion {
 	return pq
 }
 
-func adaptQuestionFromProto(q *pb.PluginQuestion) models.PluginQuestion {
+func AdaptQuestionFromProto(q *pb.PluginQuestion) models.PluginQuestion {
 	pq := models.PluginQuestion{
 		Name:         q.Name,
 		Prompt:       q.Prompt,
@@ -46,7 +46,7 @@ func adaptQuestionFromProto(q *pb.PluginQuestion) models.PluginQuestion {
 				Questions: models.PluginQuestions{},
 			}
 			for _, q := range protoSubQ.Questions {
-				subQ.Questions = append(subQ.Questions, adaptQuestionFromProto(q))
+				subQ.Questions = append(subQ.Questions, AdaptQuestionFromProto(q))
 			}
 			pq.SubQuestions = append(pq.SubQuestions, subQ)
 		}
@@ -54,12 +54,12 @@ func adaptQuestionFromProto(q *pb.PluginQuestion) models.PluginQuestion {
 	return pq
 }
 
-func AdaptConfigsToProto(c models.TaskPluginConfigs) *pb.TaskConfigs {
-	tc := &pb.TaskConfigs{
-		Configs: []*pb.TaskConfigs_Config{},
+func AdaptConfigsToProto(c models.PluginConfigs) *pb.Configs {
+	tc := &pb.Configs{
+		Configs: []*pb.Configs_Config{},
 	}
 	for _, c := range c {
-		tc.Configs = append(tc.Configs, &pb.TaskConfigs_Config{
+		tc.Configs = append(tc.Configs, &pb.Configs_Config{
 			Name:  c.Name,
 			Value: c.Value,
 		})
@@ -67,10 +67,10 @@ func AdaptConfigsToProto(c models.TaskPluginConfigs) *pb.TaskConfigs {
 	return tc
 }
 
-func AdaptConfigsFromProto(a *pb.TaskConfigs) models.TaskPluginConfigs {
-	tc := models.TaskPluginConfigs{}
+func AdaptConfigsFromProto(a *pb.Configs) models.PluginConfigs {
+	tc := models.PluginConfigs{}
 	for _, c := range a.Configs {
-		tc = append(tc, models.TaskPluginConfig{
+		tc = append(tc, models.PluginConfig{
 			Name:  c.Name,
 			Value: c.Value,
 		})
@@ -78,12 +78,12 @@ func AdaptConfigsFromProto(a *pb.TaskConfigs) models.TaskPluginConfigs {
 	return tc
 }
 
-func adaptAssetsToProto(a models.TaskPluginAssets) *pb.TaskAssets {
-	tc := &pb.TaskAssets{
-		Assets: []*pb.TaskAssets_Asset{},
+func AdaptAssetsToProto(a models.PluginAssets) *pb.Assets {
+	tc := &pb.Assets{
+		Assets: []*pb.Assets_Asset{},
 	}
 	for _, c := range a {
-		tc.Assets = append(tc.Assets, &pb.TaskAssets_Asset{
+		tc.Assets = append(tc.Assets, &pb.Assets_Asset{
 			Name:  c.Name,
 			Value: c.Value,
 		})
@@ -91,10 +91,10 @@ func adaptAssetsToProto(a models.TaskPluginAssets) *pb.TaskAssets {
 	return tc
 }
 
-func adaptAssetsFromProto(a *pb.TaskAssets) models.TaskPluginAssets {
-	tc := models.TaskPluginAssets{}
+func AdaptAssetsFromProto(a *pb.Assets) models.PluginAssets {
+	tc := models.PluginAssets{}
 	for _, c := range a.Assets {
-		tc = append(tc, models.TaskPluginAsset{
+		tc = append(tc, models.PluginAsset{
 			Name:  c.Name,
 			Value: c.Value,
 		})

@@ -1195,21 +1195,21 @@
     "optimusInstanceSpecDataType": {
       "type": "string",
       "enum": [
-        "INVALID",
+        "UNKNOWN",
         "ENV",
         "FILE"
       ],
-      "default": "INVALID",
+      "default": "UNKNOWN",
       "title": "type of data, could be an env var or file"
     },
     "optimusInstanceSpecType": {
       "type": "string",
       "enum": [
-        "INVALID",
+        "UNKNOWN",
         "TASK",
         "HOOK"
       ],
-      "default": "INVALID"
+      "default": "UNKNOWN"
     },
     "optimusJobConfigItem": {
       "type": "object",
@@ -1247,12 +1247,12 @@
     "optimusJobEventType": {
       "type": "string",
       "enum": [
-        "INVALID",
+        "UNKNOWN",
         "SLA_MISS",
         "FAILURE",
         "SUCCESS"
       ],
-      "default": "INVALID"
+      "default": "UNKNOWN"
     },
     "optimusJobSpecHook": {
       "type": "object",

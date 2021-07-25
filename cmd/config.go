@@ -212,9 +212,9 @@ func datastoreConfigQuestions(l logger, conf config.Optimus, dsRepo models.Datas
 	configAnswers := map[string]interface{}{}
 	if err := survey.Ask([]*survey.Question{
 		{
-			Name: "Type",
+			Name: "PluginType",
 			Prompt: &survey.Select{
-				Message: "Type of the datastore",
+				Message: "PluginType of the datastore",
 				Options: dsOptions,
 			},
 		},
@@ -229,7 +229,7 @@ func datastoreConfigQuestions(l logger, conf config.Optimus, dsRepo models.Datas
 		return conf, err
 	}
 	conf.Datastore = append(conf.Datastore, config.Datastore{
-		Type: configAnswers["Type"].(survey.OptionAnswer).Value,
+		Type: configAnswers["PluginType"].(survey.OptionAnswer).Value,
 		Path: configAnswers["Path"].(string),
 	})
 

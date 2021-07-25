@@ -177,11 +177,11 @@ func TestReplayRepository(t *testing.T) {
 			allTasksRepo.On("GetByName", gTask).Return(execUnit1, nil)
 			adapter := NewAdapter(allTasksRepo, nil)
 
-			unitData := models.GenerateTaskDestinationRequest{
+			unitData := models.GenerateDestinationRequest{
 				Config: models.TaskPluginConfigs{}.FromJobSpec(jobConfigs[0].Task.Config),
 				Assets: models.TaskPluginAssets{}.FromJobSpec(jobConfigs[0].Assets),
 			}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData).Return(models.GenerateTaskDestinationResponse{Destination: "p.d.t"}, nil)
+			execUnit1.On("GenerateDestination", context.TODO(), unitData).Return(models.GenerateDestinationResponse{Destination: "p.d.t"}, nil)
 
 			projectJobSpecRepo := NewProjectJobSpecRepository(db, projectSpec, adapter)
 			jobRepo := NewJobSpecRepository(db, namespaceSpec, projectJobSpecRepo, adapter)
@@ -230,11 +230,11 @@ func TestReplayRepository(t *testing.T) {
 			allTasksRepo.On("GetByName", gTask).Return(execUnit1, nil)
 			adapter := NewAdapter(allTasksRepo, nil)
 
-			unitData := models.GenerateTaskDestinationRequest{
+			unitData := models.GenerateDestinationRequest{
 				Config: models.TaskPluginConfigs{}.FromJobSpec(jobConfigs[0].Task.Config),
 				Assets: models.TaskPluginAssets{}.FromJobSpec(jobConfigs[0].Assets),
 			}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData).Return(models.GenerateTaskDestinationResponse{Destination: "p.d.t"}, nil)
+			execUnit1.On("GenerateDestination", context.TODO(), unitData).Return(models.GenerateDestinationResponse{Destination: "p.d.t"}, nil)
 
 			projectJobSpecRepo := NewProjectJobSpecRepository(db, projectSpec, adapter)
 			jobRepo := NewJobSpecRepository(db, namespaceSpec, projectJobSpecRepo, adapter)

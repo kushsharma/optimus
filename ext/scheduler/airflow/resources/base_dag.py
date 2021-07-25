@@ -41,7 +41,7 @@ dag = DAG(
     catchup ={{ if .Job.Behavior.CatchUp }} True{{ else }} False{{ end }}
 )
 
-{{$baseTaskSchema := .Job.Task.Unit.GetTaskSchema $.Context $.TaskSchemaRequest -}}
+{{$baseTaskSchema := .Job.Task.Unit.Info -}}
 {{ if ne $baseTaskSchema.SecretPath "" -}}
 transformation_secret = Secret(
     "volume",
@@ -78,7 +78,7 @@ transformation_{{$baseTaskSchema.Name | replace "-" "__dash__" | replace "." "__
 
 # hooks loop start
 {{ range $_, $t := .Job.Hooks }}
-{{ $hookSchema := $t.Unit.GetHookSchema $.Context $.HookSchemaRequest -}}
+{{ $hookSchema := $t.Unit.Info -}}
 {{- if ne $hookSchema.SecretPath "" -}}
 hook_{{$hookSchema.Name | replace "-" "_"}}_secret = Secret(
     "volume",
@@ -121,7 +121,7 @@ hook_{{$hookSchema.Name | replace "-" "__dash__"}} = SuperKubernetesPodOperator(
 # create upstream sensors
 {{ $baseWindow := $.Job.Task.Window }}
 {{- range $_, $dependency := $.Job.Dependencies}}
-{{- $dependencySchema := $dependency.Job.Task.Unit.GetTaskSchema $.Context $.TaskSchemaRequest }}
+{{- $dependencySchema := $dependency.Job.Task.Unit.Info }}
 
 {{- if eq $dependency.Type $.JobSpecDependencyTypeIntra }}
 wait_{{$dependency.Job.Name | replace "-" "__dash__" | replace "." "__dot__"}} = SuperExternalTaskSensor(
@@ -160,7 +160,7 @@ wait_{{ $t.Job.Name | replace "-" "__dash__" | replace "." "__dot__" }} >> trans
 
 # set inter-dependencies between task and hooks
 {{- range $_, $task := .Job.Hooks }}
-{{- $hookSchema := $task.Unit.GetHookSchema $.Context $.HookSchemaRequest }}
+{{- $hookSchema := $task.Unit.Info }}
 {{- if eq $hookSchema.Type $.HookTypePre }}
 hook_{{$hookSchema.Name | replace "-" "__dash__"}} >> transformation_{{$baseTaskSchema.Name | replace "-" "__dash__" | replace "." "__dot__"}}
 {{- end -}}
@@ -174,22 +174,22 @@ transformation_{{$baseTaskSchema.Name | replace "-" "__dash__" | replace "." "__
 
 # set inter-dependencies between hooks and hooks
 {{- range $_, $t := .Job.Hooks }}
-{{- $hookSchema := $t.Unit.GetHookSchema $.Context $.HookSchemaRequest }}
+{{- $hookSchema := $t.Unit.Info }}
 {{- range $_, $depend := $t.DependsOn }}
-{{- $dependHookSchema := $depend.Unit.GetHookSchema $.Context $.HookSchemaRequest }}
+{{- $dependHookSchema := $depend.Unit.Info }}
 hook_{{$dependHookSchema.Name | replace "-" "__dash__"}} >> hook_{{$hookSchema.Name | replace "-" "__dash__"}}
 {{- end }}
 {{- end }}
 
 # arrange failure hook after post hooks
 {{- range $_, $task := .Job.Hooks -}}
-{{- $hookSchema := $task.Unit.GetHookSchema $.Context $.HookSchemaRequest }}
+{{- $hookSchema := $task.Unit.Info }}
 
 {{- if eq $hookSchema.Type $.HookTypePost }}
 
 hook_{{$hookSchema.Name | replace "-" "__dash__"}} >> [
 {{- range $_, $ftask := $.Job.Hooks }}
-{{- $fhookSchema := $ftask.Unit.GetHookSchema $.Context $.HookSchemaRequest }}
+{{- $fhookSchema := $ftask.Unit.Info }}
 {{- if eq $fhookSchema.Type $.HookTypeFail }} hook_{{$fhookSchema.Name | replace "-" "__dash__"}}, {{- end -}}
 {{- end -}}
 ]

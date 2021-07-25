@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/odpf/optimus/core/tree"
@@ -64,7 +66,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 
 			mockedTimeNow := time.Now()
 			scheduledAt := time.Date(2020, 11, 11, 0, 0, 0, 0, time.UTC)
-			scheduledAtTimestamp, _ := ptypes.TimestampProto(scheduledAt)
+			scheduledAtTimestamp := timestamppb.New(scheduledAt)
 
 			projectSpec := models.ProjectSpec{
 				ID:   uuid.Must(uuid.NewRandom()),
@@ -82,17 +84,19 @@ func TestRuntimeServiceServer(t *testing.T) {
 				},
 			}
 
-			execUnit1 := new(mock.TaskPlugin)
-			execUnit1.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
+			basePlugin1 := new(mock.BasePlugin)
+			basePlugin1.On("Info").Return(models.PluginInfoResponse{
 				Name: taskName,
 			}, nil)
-			defer execUnit1.AssertExpectations(t)
+			defer basePlugin1.AssertExpectations(t)
 
 			jobSpec := models.JobSpec{
 				ID:   uuid.Must(uuid.NewRandom()),
 				Name: jobName,
 				Task: models.JobSpecTask{
-					Unit: execUnit1,
+					Unit: &models.Plugin{
+						Base: basePlugin1,
+					},
 					Config: models.JobSpecConfigs{
 						{
 							Name:  "do",
@@ -165,7 +169,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				nil,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				v1.NewAdapter(nil, nil),
 				nil,
 				instanceService,
 				nil,
@@ -179,7 +183,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			resp, err := runtimeServiceServer.RegisterInstance(context.Background(), &versionRequest)
 			assert.Nil(t, err)
 
-			adapter := v1.NewAdapter(models.TaskRegistry, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			projectSpecProto := adapter.ToProjectProto(projectSpec)
 			jobSpecProto, _ := adapter.ToJobProto(jobSpec)
 			instanceSpecProto, _ := adapter.ToInstanceProto(instanceSpec)
@@ -213,7 +217,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 					"BUCKET": "gs://some_folder",
 				},
 			}
-			adapter := v1.NewAdapter(models.TaskRegistry, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("Save", projectSpec).Return(errors.New("a random error"))
@@ -233,7 +237,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 
 				nil,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				v1.NewAdapter(nil, nil),
 				nil,
 				nil,
 				nil,
@@ -253,7 +257,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 					"BUCKET": "gs://some_folder",
 				},
 			}
-			adapter := v1.NewAdapter(models.TaskRegistry, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("Save", projectSpec).Return(nil)
@@ -273,7 +277,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 
 				nil,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				v1.NewAdapter(nil, nil),
 				nil,
 				nil,
 				nil,
@@ -302,7 +306,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				Config: map[string]string{},
 			}
 
-			adapter := v1.NewAdapter(models.TaskRegistry, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("Save", projectSpec).Return(nil)
@@ -331,7 +335,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				namespaceRepoFact,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				v1.NewAdapter(nil, nil),
 				nil,
 				nil,
 				nil,
@@ -366,7 +370,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				Config: map[string]string{},
 			}
 
-			adapter := v1.NewAdapter(models.TaskRegistry, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("GetByName", projectSpec.Name).Return(projectSpec, nil)
@@ -394,7 +398,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				namespaceRepoFact,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				v1.NewAdapter(nil, nil),
 				nil,
 				nil,
 				nil,
@@ -425,7 +429,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				Name: "dev-test-namespace-1",
 			}
 
-			adapter := v1.NewAdapter(models.TaskRegistry, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("GetByName", projectSpec.Name).Return(projectSpec, errors.New("project does not exist"))
@@ -451,7 +455,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				namespaceRepoFact,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				v1.NewAdapter(nil, nil),
 				nil,
 				nil,
 				nil,
@@ -485,19 +489,29 @@ func TestRuntimeServiceServer(t *testing.T) {
 
 			jobName := "my-job"
 			taskName := "bq2bq"
-			execUnit1 := new(mock.TaskPlugin)
-			execUnit1.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
+			execUnit1 := new(mock.BasePlugin)
+			execUnit1.On("PluginInfo").Return(models.PluginInfoResponse{
 				Name:  taskName,
 				Image: "random-image",
 			}, nil)
-			execUnit1.On("DefaultTaskAssets", context.Background(), mock2.Anything).Return(models.DefaultTaskAssetsResponse{}, nil)
 			defer execUnit1.AssertExpectations(t)
-			_ = models.TaskRegistry.Add(execUnit1)
+			climod := new(mock.CLIMod)
+			climod.On("DefaultTaskAssets", context.Background(), mock2.Anything).Return(models.DefaultAssetsResponse{}, nil)
+			defer climod.AssertExpectations(t)
+
+			pluginRepo := new(mock.SupportedPluginRepo)
+			pluginRepo.On("GetByName", taskName).Return(&models.Plugin{
+				Base:   execUnit1,
+				CLIMod: climod,
+			}, nil)
+			adapter := v1.NewAdapter(pluginRepo, nil)
 
 			jobSpec := models.JobSpec{
 				Name: jobName,
 				Task: models.JobSpecTask{
-					Unit: execUnit1,
+					Unit: &models.Plugin{
+						Base: execUnit1,
+					},
 					Config: models.JobSpecConfigs{
 						{
 							Name:  "DO",
@@ -519,8 +533,6 @@ func TestRuntimeServiceServer(t *testing.T) {
 					}),
 				Dependencies: map[string]models.JobSpecDependency{},
 			}
-
-			adapter := v1.NewAdapter(models.TaskRegistry, nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("GetByName", projectSpec.Name).Return(projectSpec, nil)
@@ -551,7 +563,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				namespaceRepoFact,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				adapter,
 				nil,
 				nil,
 				nil,
@@ -582,7 +594,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 					"BUCKET": "gs://some_folder",
 				},
 			}
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("GetByName", projectSpec.Name).Return(projectSpec, nil)
@@ -640,7 +652,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 					"BUCKET": "gs://some_folder",
 				},
 			}
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			projectRepository := new(mock.ProjectRepository)
 			projectRepository.On("GetByName", projectSpec.Name).Return(projectSpec, nil)
@@ -714,8 +726,8 @@ func TestRuntimeServiceServer(t *testing.T) {
 				ProjectSpec: projectSpec,
 			}
 
-			execUnit1 := new(mock.TaskPlugin)
-			execUnit1.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
+			execUnit1 := new(mock.BasePlugin)
+			execUnit1.On("PluginInfo").Return(models.PluginInfoResponse{
 				Name: taskName,
 			}, nil)
 			defer execUnit1.AssertExpectations(t)
@@ -724,7 +736,9 @@ func TestRuntimeServiceServer(t *testing.T) {
 				{
 					Name: jobName1,
 					Task: models.JobSpecTask{
-						Unit: execUnit1,
+						Unit: &models.Plugin{
+							Base: execUnit1,
+						},
 						Config: models.JobSpecConfigs{
 							{
 								Name:  "do",
@@ -756,9 +770,11 @@ func TestRuntimeServiceServer(t *testing.T) {
 			jobSpecRepoFactory := new(mock.JobSpecRepoFactory)
 			defer jobSpecRepoFactory.AssertExpectations(t)
 
-			allTasksRepo := new(mock.SupportedTaskRepo)
-			allTasksRepo.On("GetByName", taskName).Return(execUnit1, nil)
-			adapter := v1.NewAdapter(allTasksRepo, nil, nil)
+			pluginRepo := new(mock.SupportedPluginRepo)
+			pluginRepo.On("GetByName", taskName).Return(&models.Plugin{
+				Base: execUnit1,
+			}, nil)
+			adapter := v1.NewAdapter(pluginRepo, nil)
 
 			namespaceRepository := new(mock.NamespaceRepository)
 			namespaceRepository.On("GetByName", namespaceSpec.Name).Return(namespaceSpec, nil)
@@ -833,8 +849,8 @@ func TestRuntimeServiceServer(t *testing.T) {
 				ProjectSpec: projectSpec,
 			}
 
-			execUnit1 := new(mock.TaskPlugin)
-			execUnit1.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
+			execUnit1 := new(mock.BasePlugin)
+			execUnit1.On("PluginInfo").Return(models.PluginInfoResponse{
 				Name: taskName,
 			}, nil)
 			defer execUnit1.AssertExpectations(t)
@@ -843,7 +859,9 @@ func TestRuntimeServiceServer(t *testing.T) {
 				{
 					Name: jobName1,
 					Task: models.JobSpecTask{
-						Unit: execUnit1,
+						Unit: &models.Plugin{
+							Base: execUnit1,
+						},
 						Config: models.JobSpecConfigs{
 							{
 								Name:  "do",
@@ -869,9 +887,9 @@ func TestRuntimeServiceServer(t *testing.T) {
 			projectRepoFactory.On("New").Return(projectRepository)
 			defer projectRepoFactory.AssertExpectations(t)
 
-			allTasksRepo := new(mock.SupportedTaskRepo)
+			allTasksRepo := new(mock.SupportedPluginRepo)
 			allTasksRepo.On("GetByName", taskName).Return(execUnit1, nil)
-			adapter := v1.NewAdapter(allTasksRepo, nil, nil)
+			adapter := v1.NewAdapter(allTasksRepo, nil)
 
 			namespaceRepository := new(mock.NamespaceRepository)
 			namespaceRepository.On("GetByName", namespaceSpec.Name).Return(namespaceSpec, nil)
@@ -937,8 +955,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			projectRepoFactory.On("New").Return(projectRepository)
 			defer projectRepoFactory.AssertExpectations(t)
 
-			allTasksRepo := new(mock.SupportedTaskRepo)
-			adapter := v1.NewAdapter(allTasksRepo, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			namespaceRepository := new(mock.NamespaceRepository)
 			namespaceRepository.On("GetAll").Return([]models.NamespaceSpec{namespaceSpec}, nil)
@@ -997,14 +1014,16 @@ func TestRuntimeServiceServer(t *testing.T) {
 				ProjectSpec: projectSpec,
 			}
 
-			execUnit1 := new(mock.TaskPlugin)
+			execUnit1 := new(mock.BasePlugin)
 			defer execUnit1.AssertExpectations(t)
 
 			jobSpecs := []models.JobSpec{
 				{
 					Name: jobName1,
 					Task: models.JobSpecTask{
-						Unit: execUnit1,
+						Unit: &models.Plugin{
+							Base: execUnit1,
+						},
 						Config: models.JobSpecConfigs{
 							{
 								Name:  "do",
@@ -1030,9 +1049,11 @@ func TestRuntimeServiceServer(t *testing.T) {
 			projectRepoFactory.On("New").Return(projectRepository)
 			defer projectRepoFactory.AssertExpectations(t)
 
-			allTasksRepo := new(mock.SupportedTaskRepo)
-			allTasksRepo.On("GetByName", taskName).Return(execUnit1, nil)
-			adapter := v1.NewAdapter(allTasksRepo, nil, nil)
+			pluginRepo := new(mock.SupportedPluginRepo)
+			pluginRepo.On("GetByName", taskName).Return(&models.Plugin{
+				Base: execUnit1,
+			}, nil)
+			adapter := v1.NewAdapter(pluginRepo, nil)
 
 			namespaceRepository := new(mock.NamespaceRepository)
 			namespaceRepository.On("GetByName", namespaceSpec.Name).Return(namespaceSpec, nil)
@@ -1096,7 +1117,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			projectRepoFactory.On("New").Return(projectRepository)
 			defer projectRepoFactory.AssertExpectations(t)
 
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			jobService := new(mock.JobService)
 			jobService.On("GetByNameForProject", jobSpec.Name, projectSpec).Return(jobSpec, namespaceSpec, nil)
@@ -1180,7 +1201,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			projectRepoFactory.On("New").Return(projectRepository)
 			defer projectRepoFactory.AssertExpectations(t)
 
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 
 			namespaceRepository := new(mock.NamespaceRepository)
 			namespaceRepository.On("GetByName", namespaceSpec.Name).Return(namespaceSpec, nil)
@@ -1247,7 +1268,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				nil,
 			)
 			scheduledAt := time.Date(2020, 11, 11, 0, 0, 0, 0, time.UTC)
-			scheduledAtTimestamp, _ := ptypes.TimestampProto(scheduledAt)
+			scheduledAtTimestamp := timestamppb.New(scheduledAt)
 			req := pb.GetWindowRequest{
 				ScheduledAt: scheduledAtTimestamp,
 				Size:        "24h",
@@ -1275,7 +1296,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				nil,
 			)
 			scheduledAt := time.Date(2020, 11, 11, 0, 0, 0, 0, time.UTC)
-			scheduledAtTimestamp, _ := ptypes.TimestampProto(scheduledAt)
+			scheduledAtTimestamp := timestamppb.New(scheduledAt)
 			req := pb.GetWindowRequest{
 				ScheduledAt: scheduledAtTimestamp,
 				Size:        "",
@@ -1317,14 +1338,16 @@ func TestRuntimeServiceServer(t *testing.T) {
 				Contents:    []byte("content-of-dag"),
 			}
 
-			execUnit1 := new(mock.TaskPlugin)
-			defer execUnit1.AssertExpectations(t)
+			baseUnit := new(mock.BasePlugin)
+			defer baseUnit.AssertExpectations(t)
 
 			jobSpec := models.JobSpec{
 				ID:   uuid.Must(uuid.NewRandom()),
 				Name: jobName,
 				Task: models.JobSpecTask{
-					Unit: execUnit1,
+					Unit: &models.Plugin{
+						Base: baseUnit,
+					},
 					Config: models.JobSpecConfigs{
 						{
 							Name:  "do",
@@ -1390,7 +1413,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				namespaceRepoFact,
 				nil,
-				v1.NewAdapter(models.TaskRegistry, nil, nil),
+				v1.NewAdapter(nil, nil),
 				nil,
 				nil,
 				nil,
@@ -1494,7 +1517,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				namespaceRepoFact,
 				nil,
-				v1.NewAdapter(nil, nil, dsRepo),
+				v1.NewAdapter(nil, dsRepo),
 				nil,
 				nil,
 				nil,
@@ -1592,7 +1615,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 				projectRepoFactory,
 				namespaceRepoFact,
 				nil,
-				v1.NewAdapter(nil, nil, dsRepo),
+				v1.NewAdapter(nil, dsRepo),
 				nil,
 				nil,
 				nil,
@@ -1677,7 +1700,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			namespaceRepoFact := new(mock.NamespaceRepoFactory)
 			namespaceRepoFact.On("New", projectSpec).Return(namespaceRepository)
 			defer namespaceRepoFact.AssertExpectations(t)
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				jobService, nil,
@@ -1729,7 +1752,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			namespaceRepoFact := new(mock.NamespaceRepoFactory)
 			namespaceRepoFact.On("New", projectSpec).Return(namespaceRepository)
 			defer namespaceRepoFact.AssertExpectations(t)
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				jobService,
@@ -1785,7 +1808,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			namespaceRepoFact := new(mock.NamespaceRepoFactory)
 			namespaceRepoFact.On("New", projectSpec).Return(namespaceRepository)
 			defer namespaceRepoFact.AssertExpectations(t)
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				jobService,
@@ -1881,7 +1904,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			namespaceRepoFact := new(mock.NamespaceRepoFactory)
 			namespaceRepoFact.On("New", projectSpec).Return(namespaceRepository)
 			defer namespaceRepoFact.AssertExpectations(t)
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				jobService,
@@ -1922,7 +1945,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			namespaceRepoFact := new(mock.NamespaceRepoFactory)
 			namespaceRepoFact.On("New", projectSpec).Return(namespaceRepository)
 			defer namespaceRepoFact.AssertExpectations(t)
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				nil,
@@ -1977,7 +2000,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			namespaceRepoFact := new(mock.NamespaceRepoFactory)
 			namespaceRepoFact.On("New", projectSpec).Return(namespaceRepository)
 			defer namespaceRepoFact.AssertExpectations(t)
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				jobService,
@@ -2013,7 +2036,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			projectRepoFactory.On("New").Return(projectRepository)
 			defer projectRepoFactory.AssertExpectations(t)
 
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				nil,
@@ -2061,7 +2084,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			namespaceRepoFact := new(mock.NamespaceRepoFactory)
 			namespaceRepoFact.On("New", projectSpec).Return(namespaceRepository)
 			defer namespaceRepoFact.AssertExpectations(t)
-			adapter := v1.NewAdapter(nil, nil, nil)
+			adapter := v1.NewAdapter(nil, nil)
 			runtimeServiceServer := v1.NewRuntimeServiceServer(
 				"Version",
 				jobService,

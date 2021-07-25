@@ -156,8 +156,8 @@ func TestJobRepository(t *testing.T) {
 			db := DBSetup()
 			defer db.Close()
 
-			unitData1 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			unitData1 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
+			execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit1.AssertExpectations(t)
 			defer execUnit2.AssertExpectations(t)
 
@@ -195,12 +195,12 @@ func TestJobRepository(t *testing.T) {
 			db := DBSetup()
 			defer db.Close()
 
-			unitData1 := models.GenerateTaskDestinationRequest{
+			unitData1 := models.GenerateDestinationRequest{
 				Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config),
 				Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets),
 			}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(
-				models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(
+				models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit1.AssertExpectations(t)
 			defer execUnit2.AssertExpectations(t)
 
@@ -251,15 +251,15 @@ func TestJobRepository(t *testing.T) {
 			testModelA := testConfigs[0]
 			testModelB := testConfigs[2]
 
-			unitData1 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			unitData1 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
+			execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit1.AssertExpectations(t)
 
-			unitData2 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[2].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[2].Assets)}
+			unitData2 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[2].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[2].Assets)}
 			execUnit2.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
 				Name: tTask,
 			}, nil)
-			execUnit2.On("GenerateTaskDestination", context.TODO(), unitData2).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			execUnit2.On("GenerateDestination", context.TODO(), unitData2).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit2.AssertExpectations(t)
 
 			projectJobSpecRepo := NewProjectJobSpecRepository(db, projectSpec, adapter)
@@ -290,13 +290,13 @@ func TestJobRepository(t *testing.T) {
 			defer db.Close()
 			testModelA := testConfigs[0]
 
-			unitData1 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			unitData1 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
+			execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit1.AssertExpectations(t)
 
-			unitData2 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[2].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[2].Assets)}
-			execUnit2.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
-			execUnit2.On("GenerateTaskDestination", context.TODO(), unitData2).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			unitData2 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[2].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[2].Assets)}
+			execUnit2.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
+			execUnit2.On("GenerateDestination", context.TODO(), unitData2).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit2.AssertExpectations(t)
 
 			projectJobSpecRepo := NewProjectJobSpecRepository(db, projectSpec, adapter)
@@ -439,8 +439,8 @@ func TestJobRepository(t *testing.T) {
 			defer db.Close()
 			testModelA := testConfigs[0]
 
-			unitData1 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			unitData1 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
+			execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit1.AssertExpectations(t)
 
 			projectJobSpecRepo := NewProjectJobSpecRepository(db, projectSpec, adapter)
@@ -469,8 +469,8 @@ func TestJobRepository(t *testing.T) {
 			defer db.Close()
 			testModelA := testConfigs[0]
 
-			unitData1 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
-			execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+			unitData1 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
+			execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 			defer execUnit1.AssertExpectations(t)
 
 			projectJobSpecRepo := NewProjectJobSpecRepository(db, projectSpec, adapter)
@@ -669,8 +669,8 @@ func TestProjectJobRepository(t *testing.T) {
 		testModels := []models.JobSpec{}
 		testModels = append(testModels, testConfigs...)
 
-		unitData1 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
-		execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+		unitData1 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
+		execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 
 		defer execUnit1.AssertExpectations(t)
 		defer execUnit2.AssertExpectations(t)
@@ -694,13 +694,13 @@ func TestProjectJobRepository(t *testing.T) {
 		testModels := []models.JobSpec{}
 		testModels = append(testModels, testConfigs...)
 
-		unitData1 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
-		execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+		unitData1 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets)}
+		execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 		execUnit2.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
 			Name: tTask,
 		}, nil)
-		unitData2 := models.GenerateTaskDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[2].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[2].Assets)}
-		execUnit2.On("GenerateTaskDestination", context.TODO(), unitData2).Return(models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+		unitData2 := models.GenerateDestinationRequest{Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[2].Task.Config), Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[2].Assets)}
+		execUnit2.On("GenerateDestination", context.TODO(), unitData2).Return(models.GenerateDestinationResponse{Destination: destination}, nil)
 
 		defer execUnit1.AssertExpectations(t)
 		defer execUnit2.AssertExpectations(t)
@@ -722,12 +722,12 @@ func TestProjectJobRepository(t *testing.T) {
 		db := DBSetup()
 		defer db.Close()
 
-		unitData1 := models.GenerateTaskDestinationRequest{
+		unitData1 := models.GenerateDestinationRequest{
 			Config: models.TaskPluginConfigs{}.FromJobSpec(testConfigs[0].Task.Config),
 			Assets: models.TaskPluginAssets{}.FromJobSpec(testConfigs[0].Assets),
 		}
-		execUnit1.On("GenerateTaskDestination", context.TODO(), unitData1).Return(
-			models.GenerateTaskDestinationResponse{Destination: destination}, nil)
+		execUnit1.On("GenerateDestination", context.TODO(), unitData1).Return(
+			models.GenerateDestinationResponse{Destination: destination}, nil)
 		defer execUnit1.AssertExpectations(t)
 		defer execUnit2.AssertExpectations(t)
 
