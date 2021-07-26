@@ -85,7 +85,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			}
 
 			basePlugin1 := new(mock.BasePlugin)
-			basePlugin1.On("Info").Return(models.PluginInfoResponse{
+			basePlugin1.On("PluginInfo").Return(&models.PluginInfoResponse{
 				Name: taskName,
 			}, nil)
 			defer basePlugin1.AssertExpectations(t)
@@ -145,7 +145,6 @@ func TestRuntimeServiceServer(t *testing.T) {
 			defer projectRepoFactory.AssertExpectations(t)
 
 			jobService := new(mock.JobService)
-			//jobService.On("GetByName", jobName, projectSpec).Return(jobSpec, nil)
 			jobService.On("GetByNameForProject", jobName, projectSpec).Return(jobSpec, namespaceSpec, nil)
 			defer jobService.AssertExpectations(t)
 
@@ -490,19 +489,15 @@ func TestRuntimeServiceServer(t *testing.T) {
 			jobName := "my-job"
 			taskName := "bq2bq"
 			execUnit1 := new(mock.BasePlugin)
-			execUnit1.On("PluginInfo").Return(models.PluginInfoResponse{
+			execUnit1.On("PluginInfo").Return(&models.PluginInfoResponse{
 				Name:  taskName,
 				Image: "random-image",
 			}, nil)
 			defer execUnit1.AssertExpectations(t)
-			climod := new(mock.CLIMod)
-			climod.On("DefaultTaskAssets", context.Background(), mock2.Anything).Return(models.DefaultAssetsResponse{}, nil)
-			defer climod.AssertExpectations(t)
 
 			pluginRepo := new(mock.SupportedPluginRepo)
 			pluginRepo.On("GetByName", taskName).Return(&models.Plugin{
-				Base:   execUnit1,
-				CLIMod: climod,
+				Base: execUnit1,
 			}, nil)
 			adapter := v1.NewAdapter(pluginRepo, nil)
 
@@ -727,7 +722,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			}
 
 			execUnit1 := new(mock.BasePlugin)
-			execUnit1.On("PluginInfo").Return(models.PluginInfoResponse{
+			execUnit1.On("PluginInfo").Return(&models.PluginInfoResponse{
 				Name: taskName,
 			}, nil)
 			defer execUnit1.AssertExpectations(t)
@@ -850,7 +845,7 @@ func TestRuntimeServiceServer(t *testing.T) {
 			}
 
 			execUnit1 := new(mock.BasePlugin)
-			execUnit1.On("PluginInfo").Return(models.PluginInfoResponse{
+			execUnit1.On("PluginInfo").Return(&models.PluginInfoResponse{
 				Name: taskName,
 			}, nil)
 			defer execUnit1.AssertExpectations(t)

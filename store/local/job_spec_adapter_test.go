@@ -51,7 +51,7 @@ hooks: []
 		assert.Nil(t, err)
 
 		execUnit := new(mock.BasePlugin)
-		execUnit.On("PluginInfo").Return(models.PluginInfoResponse{
+		execUnit.On("PluginInfo").Return(&models.PluginInfoResponse{
 			Name: "bq2bq",
 		}, nil)
 

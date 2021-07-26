@@ -54,6 +54,11 @@ type CLIMod struct {
 	mock.Mock `hash:"-"`
 }
 
+func (repo *CLIMod) PluginInfo() (*models.PluginInfoResponse, error) {
+	args := repo.Called()
+	return args.Get(0).(*models.PluginInfoResponse), args.Error(1)
+}
+
 func (repo *CLIMod) DefaultConfig(ctx context.Context, inp models.DefaultConfigRequest) (*models.DefaultConfigResponse, error) {
 	args := repo.Called(ctx, inp)
 	return args.Get(0).(*models.DefaultConfigResponse), args.Error(1)
@@ -81,6 +86,11 @@ func (repo *CLIMod) ValidateQuestion(ctx context.Context, inp models.ValidateQue
 
 type DependencyResolverMod struct {
 	mock.Mock `hash:"-"`
+}
+
+func (repo *DependencyResolverMod) PluginInfo() (*models.PluginInfoResponse, error) {
+	args := repo.Called()
+	return args.Get(0).(*models.PluginInfoResponse), args.Error(1)
 }
 
 func (repo *DependencyResolverMod) GenerateDestination(ctx context.Context, inp models.GenerateDestinationRequest) (*models.GenerateDestinationResponse, error) {

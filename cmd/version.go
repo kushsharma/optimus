@@ -42,6 +42,13 @@ func versionCommand(l logger, host string, pluginRepo models.PluginRepository) *
 				l.Printf("Description: %s\n", schema.Description)
 				l.Printf("Image: %s\n", schema.Image)
 				l.Printf("Type: %s\n", schema.PluginType)
+				l.Printf("Plugin version: %s\n", schema.PluginVersion)
+				if schema.HookType != "" {
+					l.Printf("Hook type: %s\n", schema.HookType)
+				}
+				if len(schema.DependsOn) != 0 {
+					l.Printf("Depends on: %v\n", schema.DependsOn)
+				}
 				l.Println("")
 			}
 			return nil

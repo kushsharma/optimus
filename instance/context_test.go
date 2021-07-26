@@ -32,10 +32,11 @@ func TestContextManager(t *testing.T) {
 				ProjectSpec: projectSpec,
 			}
 
-			execUnit := new(mock.TaskPlugin)
-			execUnit.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
+			execUnit := new(mock.BasePlugin)
+			execUnit.On("PluginInfo").Return(&models.PluginInfoResponse{
 				Name: "bq",
 			}, nil)
+			cliMod := new(mock.CLIMod)
 
 			jobSpec := models.JobSpec{
 				Name:  "foo",
@@ -49,7 +50,7 @@ func TestContextManager(t *testing.T) {
 					Interval:  "* * * * *",
 				},
 				Task: models.JobSpecTask{
-					Unit:     execUnit,
+					Unit:     &models.Plugin{Base: execUnit, CLIMod: cliMod},
 					Priority: 2000,
 					Window: models.JobSpecTaskWindow{
 						Size:       time.Hour,
@@ -111,14 +112,14 @@ func TestContextManager(t *testing.T) {
 				},
 			}
 
-			execUnit.On("CompileTaskAssets", context.TODO(), models.CompileTaskAssetsRequest{
+			cliMod.On("CompileAssets", context.TODO(), models.CompileAssetsRequest{
 				TaskWindow:       jobSpec.Task.Window,
-				Config:           models.TaskPluginConfigs{}.FromJobSpec(jobSpec.Task.Config),
-				Assets:           models.TaskPluginAssets{}.FromJobSpec(jobSpec.Assets),
+				Config:           models.PluginConfigs{}.FromJobSpec(jobSpec.Task.Config),
+				Assets:           models.PluginAssets{}.FromJobSpec(jobSpec.Assets),
 				InstanceSchedule: scheduledAt,
 				InstanceData:     instanceSpec.Data,
-			}).Return(models.CompileTaskAssetsResponse{Assets: models.TaskPluginAssets{
-				models.TaskPluginAsset{
+			}).Return(&models.CompileAssetsResponse{Assets: models.PluginAssets{
+				models.PluginAsset{
 					Name:  "query.sql",
 					Value: "select * from table WHERE event_timestamp > '{{.EXECUTION_TIME}}'",
 				},
@@ -159,15 +160,17 @@ func TestContextManager(t *testing.T) {
 				ProjectSpec: projectSpec,
 			}
 
-			execUnit := new(mock.TaskPlugin)
-			execUnit.On("GetTaskSchema", context.Background(), models.GetTaskSchemaRequest{}).Return(models.GetTaskSchemaResponse{
+			execUnit := new(mock.BasePlugin)
+			execUnit.On("PluginInfo").Return(&models.PluginInfoResponse{
 				Name: "bq",
 			}, nil)
+			cliMod := new(mock.CLIMod)
 
 			transporterHook := "transporter"
-			hookUnit := new(mock.HookPlugin)
-			hookUnit.On("GetHookSchema", context.Background(), models.GetHookSchemaRequest{}).Return(models.GetHookSchemaResponse{
-				Name: transporterHook,
+			hookUnit := new(mock.BasePlugin)
+			hookUnit.On("PluginInfo").Return(&models.PluginInfoResponse{
+				Name:       transporterHook,
+				PluginType: models.PluginTypeHook,
 			}, nil)
 
 			jobSpec := models.JobSpec{
@@ -182,7 +185,7 @@ func TestContextManager(t *testing.T) {
 					Interval:  "* * * * *",
 				},
 				Task: models.JobSpecTask{
-					Unit:     execUnit,
+					Unit:     &models.Plugin{Base: execUnit, CLIMod: cliMod},
 					Priority: 2000,
 					Window: models.JobSpecTaskWindow{
 						Size:       time.Hour,
@@ -225,7 +228,7 @@ func TestContextManager(t *testing.T) {
 								Value: `{{.GLOBAL__transporterKafkaBroker}}`,
 							},
 						},
-						Unit: hookUnit,
+						Unit: &models.Plugin{Base: hookUnit},
 					},
 				},
 			}
@@ -254,14 +257,14 @@ func TestContextManager(t *testing.T) {
 					},
 				},
 			}
-			execUnit.On("CompileTaskAssets", context.TODO(), models.CompileTaskAssetsRequest{
+			cliMod.On("CompileAssets", context.TODO(), models.CompileAssetsRequest{
 				TaskWindow:       jobSpec.Task.Window,
-				Config:           models.TaskPluginConfigs{}.FromJobSpec(jobSpec.Task.Config),
-				Assets:           models.TaskPluginAssets{}.FromJobSpec(jobSpec.Assets),
+				Config:           models.PluginConfigs{}.FromJobSpec(jobSpec.Task.Config),
+				Assets:           models.PluginAssets{}.FromJobSpec(jobSpec.Assets),
 				InstanceSchedule: scheduledAt,
 				InstanceData:     instanceSpec.Data,
-			}).Return(models.CompileTaskAssetsResponse{Assets: models.TaskPluginAssets{
-				models.TaskPluginAsset{
+			}).Return(&models.CompileAssetsResponse{Assets: models.PluginAssets{
+				models.PluginAsset{
 					Name:  "query.sql",
 					Value: "select * from table WHERE event_timestamp > '{{.EXECUTION_TIME}}'",
 				},
@@ -306,7 +309,8 @@ func TestContextManager(t *testing.T) {
 				ProjectSpec: projectSpec,
 			}
 
-			execUnit := new(mock.TaskPlugin)
+			execUnit := new(mock.BasePlugin)
+			cliMod := new(mock.CLIMod)
 
 			jobSpec := models.JobSpec{
 				Name:  "foo",
@@ -320,7 +324,7 @@ func TestContextManager(t *testing.T) {
 					Interval:  "* * * * *",
 				},
 				Task: models.JobSpecTask{
-					Unit:     execUnit,
+					Unit:     &models.Plugin{Base: execUnit, CLIMod: cliMod},
 					Priority: 2000,
 					Window: models.JobSpecTaskWindow{
 						Size:       time.Hour,
@@ -386,14 +390,14 @@ func TestContextManager(t *testing.T) {
 				},
 			}
 
-			execUnit.On("CompileTaskAssets", context.TODO(), models.CompileTaskAssetsRequest{
+			cliMod.On("CompileAssets", context.TODO(), models.CompileAssetsRequest{
 				TaskWindow:       jobSpec.Task.Window,
-				Config:           models.TaskPluginConfigs{}.FromJobSpec(jobSpec.Task.Config),
-				Assets:           models.TaskPluginAssets{}.FromJobSpec(jobSpec.Assets),
+				Config:           models.PluginConfigs{}.FromJobSpec(jobSpec.Task.Config),
+				Assets:           models.PluginAssets{}.FromJobSpec(jobSpec.Assets),
 				InstanceSchedule: scheduledAt,
 				InstanceData:     instanceSpec.Data,
-			}).Return(models.CompileTaskAssetsResponse{Assets: models.TaskPluginAssets{
-				models.TaskPluginAsset{
+			}).Return(&models.CompileAssetsResponse{Assets: models.PluginAssets{
+				models.PluginAsset{
 					Name:  "query.sql",
 					Value: "select * from table WHERE event_timestamp > '{{.EXECUTION_TIME}}'",
 				},

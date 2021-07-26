@@ -84,6 +84,10 @@ func Initialize(pluginLogger hclog.Logger) error {
 			if c, ok := rawMod.(models.DependencyResolverMod); ok {
 				drClient = c
 				pluginLogger.Debug(fmt.Sprintf("%s mod found for: %s", models.ModTypeDependencyResolver, baseInfo.Name))
+
+				// cache name
+				drGRPCClient := rawMod.(*dependencyresolver.GRPCClient)
+				drGRPCClient.SetName(baseInfo.Name)
 			}
 		}
 
@@ -198,12 +202,10 @@ func Serve(f Factory) {
 		Level:      hclog.Trace,
 		JSONFormat: true,
 	})
-
-	plugin := f(logger)
-	serve(plugin, logger)
+	servePlugin(f(logger), logger)
 }
 
-func serve(plugin interface{}, logger hclog.Logger) {
+func servePlugin(plugin interface{}, logger hclog.Logger) {
 	switch p := plugin.(type) {
 	case models.DependencyResolverMod:
 		if cliPlugin, ok := plugin.(models.CommandLineMod); ok {

@@ -271,7 +271,7 @@ this effects runtime dependencies and template macros`,
 		return jobInput, nil
 	}
 
-	taskQuesResponse, err := cliMod.GetQuestions(context.TODO(), models.GetQuestionsRequest{
+	taskQuesResponse, err := cliMod.GetQuestions(context.Background(), models.GetQuestionsRequest{
 		JobName: jobInput.Name,
 	})
 	if err != nil {
@@ -279,29 +279,35 @@ this effects runtime dependencies and template macros`,
 	}
 
 	userInputs := models.PluginAnswers{}
-	for _, ques := range taskQuesResponse.Questions {
-		responseAnswer, err := AskTaskSurveyQuestion(ques, cliMod)
-		if err != nil {
-			return local.Job{}, err
+	if taskQuesResponse.Questions != nil {
+		for _, ques := range taskQuesResponse.Questions {
+			responseAnswer, err := AskTaskSurveyQuestion(ques, cliMod)
+			if err != nil {
+				return local.Job{}, err
+			}
+			userInputs = append(userInputs, responseAnswer...)
 		}
-		userInputs = append(userInputs, responseAnswer...)
 	}
 
-	generateConfResponse, err := cliMod.DefaultConfig(context.TODO(), models.DefaultConfigRequest{
+	generateConfResponse, err := cliMod.DefaultConfig(context.Background(), models.DefaultConfigRequest{
 		Answers: userInputs,
 	})
 	if err != nil {
 		return jobInput, err
 	}
-	jobInput.Task.Config = local.JobSpecConfigToYamlSlice(generateConfResponse.Config.ToJobSpec())
+	if generateConfResponse.Config != nil {
+		jobInput.Task.Config = local.JobSpecConfigToYamlSlice(generateConfResponse.Config.ToJobSpec())
+	}
 
-	genAssetResponse, err := cliMod.DefaultAssets(context.TODO(), models.DefaultAssetsRequest{
+	genAssetResponse, err := cliMod.DefaultAssets(context.Background(), models.DefaultAssetsRequest{
 		Answers: userInputs,
 	})
 	if err != nil {
 		return jobInput, err
 	}
-	jobInput.Asset = genAssetResponse.Assets.ToJobSpec().ToMap()
+	if genAssetResponse.Assets != nil {
+		jobInput.Asset = genAssetResponse.Assets.ToJobSpec().ToMap()
+	}
 
 	return jobInput, nil
 }
@@ -390,12 +396,14 @@ func createHookSurvey(jobSpec models.JobSpec, pluginRepo models.PluginRepository
 		}
 
 		userInputs := models.PluginAnswers{}
-		for _, ques := range taskQuesResponse.Questions {
-			responseAnswer, err := AskTaskSurveyQuestion(ques, cliMod)
-			if err != nil {
-				return emptyJobSpec, err
+		if taskQuesResponse.Questions != nil {
+			for _, ques := range taskQuesResponse.Questions {
+				responseAnswer, err := AskTaskSurveyQuestion(ques, cliMod)
+				if err != nil {
+					return emptyJobSpec, err
+				}
+				userInputs = append(userInputs, responseAnswer...)
 			}
-			userInputs = append(userInputs, responseAnswer...)
 		}
 
 		generateConfResponse, err := cliMod.DefaultConfig(context.Background(), models.DefaultConfigRequest{
@@ -404,7 +412,9 @@ func createHookSurvey(jobSpec models.JobSpec, pluginRepo models.PluginRepository
 		if err != nil {
 			return emptyJobSpec, err
 		}
-		jobSpecConfigs = generateConfResponse.Config.ToJobSpec()
+		if generateConfResponse.Config != nil {
+			jobSpecConfigs = generateConfResponse.Config.ToJobSpec()
+		}
 	}
 	jobSpec.Hooks = append(jobSpec.Hooks, models.JobSpecHook{
 		Unit:   executionHook,

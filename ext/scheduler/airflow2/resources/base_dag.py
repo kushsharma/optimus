@@ -119,7 +119,7 @@ hook_{{$hookSchema.Name | replace "-" "__dash__"}} = SuperKubernetesPodOperator(
         k8s.V1EnvVar(name="SCHEDULED_AT",value='{{ "{{ next_execution_date }}" }}'),
         # rest of the env vars are pulled from the container by making a GRPC call to optimus
     ],
-    {{ if eq $hookSchema.Type $.HookTypeFail -}}
+    {{ if eq $hookSchema.HookType $.HookTypeFail -}}
         trigger_rule="one_failed",
     {{ end -}}
     reattach_on_restart=True
@@ -171,13 +171,13 @@ wait_{{ $t.Job.Name | replace "-" "__dash__" | replace "." "__dot__" }} >> trans
 # set inter-dependencies between task and hooks
 {{- range $_, $task := .Job.Hooks }}
 {{- $hookSchema := $task.Unit.Info }}
-{{- if eq $hookSchema.Type $.HookTypePre }}
+{{- if eq $hookSchema.HookType $.HookTypePre }}
 hook_{{$hookSchema.Name | replace "-" "__dash__"}} >> transformation_{{$baseTaskSchema.Name | replace "-" "__dash__" | replace "." "__dot__"}}
 {{- end -}}
-{{- if eq $hookSchema.Type $.HookTypePost }}
+{{- if eq $hookSchema.HookType $.HookTypePost }}
 transformation_{{$baseTaskSchema.Name | replace "-" "__dash__" | replace "." "__dot__"}} >> hook_{{$hookSchema.Name | replace "-" "__dash__"}}
 {{- end -}}
-{{- if eq $hookSchema.Type $.HookTypeFail }}
+{{- if eq $hookSchema.HookType $.HookTypeFail }}
 transformation_{{$baseTaskSchema.Name | replace "-" "__dash__" | replace "." "__dot__"}} >> hook_{{$hookSchema.Name | replace "-" "__dash__"}}
 {{- end -}}
 {{- end }}
@@ -195,12 +195,12 @@ hook_{{$dependHookSchema.Name | replace "-" "__dash__"}} >> hook_{{$hookSchema.N
 {{- range $_, $task := .Job.Hooks -}}
 {{- $hookSchema := $task.Unit.Info }}
 
-{{- if eq $hookSchema.Type $.HookTypePost }}
+{{- if eq $hookSchema.HookType $.HookTypePost }}
 
 hook_{{$hookSchema.Name | replace "-" "__dash__"}} >> [
 {{- range $_, $ftask := $.Job.Hooks }}
 {{- $fhookSchema := $ftask.Unit.Info }}
-{{- if eq $fhookSchema.Type $.HookTypeFail }} hook_{{$fhookSchema.Name | replace "-" "__dash__"}}, {{- end -}}
+{{- if eq $fhookSchema.HookType $.HookTypeFail }} hook_{{$fhookSchema.Name | replace "-" "__dash__"}}, {{- end -}}
 {{- end -}}
 ]
 

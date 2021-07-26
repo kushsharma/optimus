@@ -31,7 +31,7 @@ func TestAdapter(t *testing.T) {
 	})
 	t.Run("should successfully parse job spec to and from proto", func(t *testing.T) {
 		execUnit1 := new(mock.BasePlugin)
-		execUnit1.On("PluginInfo").Return(models.PluginInfoResponse{
+		execUnit1.On("PluginInfo").Return(&models.PluginInfoResponse{
 			Name: "sample-task",
 		}, nil)
 		defer execUnit1.AssertExpectations(t)
